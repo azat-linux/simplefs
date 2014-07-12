@@ -47,7 +47,6 @@ We are not planning to use this filesystem in a production machine. So some desi
 TODO
 -----
 - After the 1.0 release, start with support for extents, which on completion will be 2.0
-- After the 2.0 release, start with journalling support, which on completion will be 3.0
 
 
 To compile:

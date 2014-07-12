@@ -36,6 +36,8 @@ const int SIMPLEFS_INODESTORE_BLOCK_NUMBER = 1;
  * contents of the root directory are stored */
 const int SIMPLEFS_ROOTDIR_DATABLOCK_NUMBER = 2;
 
+const int SIMPLEFS_JOURNAL_BLOCK_NUMBER = 3;
+
 /* The name+inode_number pair for each file in a directory.
  * This gets stored as the data for a directory */
 struct simplefs_dir_record {

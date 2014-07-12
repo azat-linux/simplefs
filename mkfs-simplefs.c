@@ -59,6 +59,7 @@ static int write_inode_store(int fd)
 		return -1;
 	}
 	printf("root directory inode written succesfully\n");
+	return 0;
 }
 
 static int write_inode(int fd, const struct simplefs_inode *i)
