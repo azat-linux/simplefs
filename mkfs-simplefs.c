@@ -9,8 +9,8 @@
 
 #include "simple.h"
 
-const uint64_t WELCOMEFILE_DATABLOCK_NUMBER = 3;
-const uint64_t WELCOMEFILE_INODE_NUMBER = 2;
+#define WELCOMEFILE_DATABLOCK_NUMBER (SIMPLEFS_LAST_RESERVED_BLOCK + 1)
+#define WELCOMEFILE_INODE_NUMBER (SIMPLEFS_LAST_RESERVED_INODE + 1)
 
 static int write_superblock(int fd)
 {
@@ -18,10 +18,9 @@ static int write_superblock(int fd)
 		.version = 1,
 		.magic = SIMPLEFS_MAGIC,
 		.block_size = SIMPLEFS_DEFAULT_BLOCK_SIZE,
-		/* One inode for rootdirectory and another for a welcome file that we are going to create */
-		.inodes_count = 2,
+		.inodes_count = WELCOMEFILE_INODE_NUMBER,
 		/* FIXME: Free blocks management is not implemented yet */
-		.free_blocks = (~0) & ~(1 << WELCOMEFILE_DATABLOCK_NUMBER),
+		.free_blocks = (~0) & ~(1 << SIMPLEFS_LAST_RESERVED_BLOCK),
 	};
 	ssize_t ret;
 
@@ -57,6 +56,26 @@ static int write_inode_store(int fd)
 	}
 
 	printf("root directory inode written succesfully\n");
+	return 0;
+}
+
+static int write_journal(int fd)
+{
+	ssize_t ret;
+
+	struct simplefs_inode journal;
+
+	journal.inode_no = SIMPLEFS_JOURNAL_INODE_NUMBER;
+	journal.data_block_number = SIMPLEFS_JOURNAL_BLOCK_NUMBER;
+
+	ret = write(fd, &journal, sizeof(journal));
+
+	if (ret != sizeof(journal)) {
+		printf("Error while writing journal inode. Retry your mkfs\n");
+		return -1;
+	}
+
+	printf("journal inode written succesfully\n");
 	return 0;
 }
 
@@ -155,6 +174,8 @@ int main(int argc, char *argv[])
 		if (write_superblock(fd))
 			break;
 		if (write_inode_store(fd))
+			break;
+		if (write_journal(fd))
 			break;
 
 		if (write_inode(fd, &welcome))
