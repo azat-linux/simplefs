@@ -25,7 +25,7 @@ static int write_superblock(int fd)
 	};
 	ssize_t ret;
 
-	ret = write(fd, (char *)&sb, sizeof(sb));
+	ret = write(fd, &sb, sizeof(sb));
 	if (ret != SIMPLEFS_DEFAULT_BLOCK_SIZE) {
 		printf
 		    ("bytes written [%d] are not equal to the default block size\n",
@@ -48,7 +48,7 @@ static int write_inode_store(int fd)
 	root_inode.data_block_number = SIMPLEFS_ROOTDIR_DATABLOCK_NUMBER;
 	root_inode.dir_children_count = 1;
 
-	ret = write(fd, (char *)&root_inode, sizeof(root_inode));
+	ret = write(fd, &root_inode, sizeof(root_inode));
 
 	if (ret != sizeof(root_inode)) {
 		printf
@@ -64,7 +64,7 @@ static int write_inode(int fd, const struct simplefs_inode *i)
 	off_t nbytes;
 	ssize_t ret;
 
-	ret = write(fd, (char *)&i, sizeof(*i));
+	ret = write(fd, i, sizeof(*i));
 	if (ret != sizeof(*i)) {
 		printf
 		    ("The welcomefile inode was not written properly. Retry your mkfs\n");
