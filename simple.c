@@ -359,19 +359,28 @@ ssize_t simplefs_write(struct file * filp, const char __user * buf, size_t len,
 	struct simplefs_inode *sfs_inode;
 	struct buffer_head *bh;
 	struct super_block *sb;
+	struct simplefs_super_block *sfs_sb;
+	handle_t *handle;
 
 	char *buffer;
 
 	int retval;
 
+	sb = filp->f_path.dentry->d_inode->i_sb;
+	sfs_sb = SIMPLEFS_SB(sb);
+
+	handle = jbd2_journal_start(sfs_sb->journal, 1);
+	if (IS_ERR(handle))
+		return PTR_ERR(handle);
 	retval = generic_write_checks(filp, ppos, &len, 0);
-	if (retval) {
+	if (retval)
 		return retval;
-	}
+	retval = jbd2_journal_stop(handle);
+	if (retval)
+		return retval;
 
 	inode = filp->f_path.dentry->d_inode;
 	sfs_inode = SIMPLEFS_INODE(inode);
-	sb = inode->i_sb;
 
 	bh = sb_bread(filp->f_path.dentry->d_inode->i_sb,
 					    sfs_inode->data_block_number);
