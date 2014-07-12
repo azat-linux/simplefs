@@ -89,5 +89,5 @@ struct simplefs_super_block {
 	/** FIXME: move this into separate struct */
 	struct journal_s *journal;
 
-	char padding[4056];
+	char padding[4048];
 };
