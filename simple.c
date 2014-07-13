@@ -837,10 +837,14 @@ static struct dentry *simplefs_mount(struct file_system_type *fs_type,
 
 static void simplefs_kill_superblock(struct super_block *sb)
 {
+	struct simplefs_super_block *sfs_sb = SIMPLEFS_SB(sb);
+
 	printk(KERN_INFO
 	       "simplefs superblock is destroyed. Unmount succesful.\n");
 	/* This is just a dummy function as of now. As our filesystem gets matured,
 	 * we will do more meaningful operations here */
+
+	jbd2_journal_destroy(sfs_sb->journal);
 
 	kill_block_super(sb);
 	return;
