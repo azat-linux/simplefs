@@ -674,8 +674,15 @@ void simplefs_destory_inode(struct inode *inode)
 	kmem_cache_free(sfs_inode_cachep, sfs_inode);
 }
 
+static void simplefs_put_super(struct super_block *sb)
+{
+	struct simplefs_super_block *sfs_sb = SIMPLEFS_SB(sb);
+	jbd2_journal_destroy(sfs_sb->journal);
+}
+
 static const struct super_operations simplefs_sops = {
 	.destroy_inode = simplefs_destory_inode,
+	.put_super = simplefs_put_super,
 };
 
 static int simplefs_load_journal(struct super_block *sb, int devnum)
@@ -837,14 +844,10 @@ static struct dentry *simplefs_mount(struct file_system_type *fs_type,
 
 static void simplefs_kill_superblock(struct super_block *sb)
 {
-	struct simplefs_super_block *sfs_sb = SIMPLEFS_SB(sb);
-
 	printk(KERN_INFO
 	       "simplefs superblock is destroyed. Unmount succesful.\n");
 	/* This is just a dummy function as of now. As our filesystem gets matured,
 	 * we will do more meaningful operations here */
-
-	jbd2_journal_destroy(sfs_sb->journal);
 
 	kill_block_super(sb);
 	return;
