@@ -677,7 +677,9 @@ void simplefs_destory_inode(struct inode *inode)
 static void simplefs_put_super(struct super_block *sb)
 {
 	struct simplefs_super_block *sfs_sb = SIMPLEFS_SB(sb);
-	jbd2_journal_destroy(sfs_sb->journal);
+	if (sfs_sb->journal)
+		WARN_ON(jbd2_journal_destroy(sfs_sb->journal) < 0);
+	sfs_sb->journal = NULL;
 }
 
 static const struct super_operations simplefs_sops = {
