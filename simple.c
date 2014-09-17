@@ -608,9 +608,9 @@ static struct inode *simplefs_iget(struct super_block *sb, int ino)
 	inode->i_sb = sb;
 	inode->i_op = &simplefs_inode_ops;
 
-	if (S_ISDIR(inode->i_mode))
+	if (S_ISDIR(sfs_inode->mode))
 		inode->i_fop = &simplefs_dir_operations;
-	else if (S_ISREG(inode->i_mode) || ino == SIMPLEFS_JOURNAL_INODE_NUMBER)
+	else if (S_ISREG(sfs_inode->mode) || ino == SIMPLEFS_JOURNAL_INODE_NUMBER)
 		inode->i_fop = &simplefs_file_operations;
 	else
 		printk(KERN_ERR
