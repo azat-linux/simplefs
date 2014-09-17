@@ -34,17 +34,16 @@ const int SIMPLEFS_SUPERBLOCK_BLOCK_NUMBER = 0;
 /* The disk block where the inodes are stored */
 const int SIMPLEFS_INODESTORE_BLOCK_NUMBER = 1;
 
-/* The disk block where the name+inode_number pairs of the
- * contents of the root directory are stored */
-const int SIMPLEFS_ROOTDIR_DATABLOCK_NUMBER = 2;
-
 /** Journal settings */
 const int SIMPLEFS_JOURNAL_INODE_NUMBER = 2;
-const int SIMPLEFS_JOURNAL_BLOCK_NUMBER = 3;
+const int SIMPLEFS_JOURNAL_BLOCK_NUMBER = 2;
 const int SIMPLEFS_JOURNAL_BLOCKS = 2;
 
-#define SIMPLEFS_LAST_RESERVED_BLOCK \
-	(SIMPLEFS_JOURNAL_BLOCK_NUMBER + SIMPLEFS_JOURNAL_BLOCKS)
+/* The disk block where the name+inode_number pairs of the
+ * contents of the root directory are stored */
+const int SIMPLEFS_ROOTDIR_DATABLOCK_NUMBER = 4;
+
+#define SIMPLEFS_LAST_RESERVED_BLOCK SIMPLEFS_ROOTDIR_DATABLOCK_NUMBER
 #define SIMPLEFS_LAST_RESERVED_INODE SIMPLEFS_JOURNAL_INODE_NUMBER
 
 /* The name+inode_number pair for each file in a directory.
