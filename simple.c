@@ -378,9 +378,6 @@ ssize_t simplefs_write(struct file * filp, const char __user * buf, size_t len,
 	retval = generic_write_checks(filp, ppos, &len, 0);
 	if (retval)
 		return retval;
-	retval = jbd2_journal_stop(handle);
-	if (retval)
-		return retval;
 
 	inode = filp->f_path.dentry->d_inode;
 	sfs_inode = SIMPLEFS_INODE(inode);
@@ -398,6 +395,13 @@ ssize_t simplefs_write(struct file * filp, const char __user * buf, size_t len,
 	/* Move the pointer until the required byte offset */
 	buffer += *ppos;
 
+	retval = jbd2_journal_get_write_access(handle, bh);
+	if (WARN_ON(retval)) {
+		brelse(bh);
+		sfs_trace("Can't get write access for bh\n");
+		return retval;
+	}
+
 	if (copy_from_user(buffer, buf, len)) {
 		brelse(bh);
 		printk(KERN_ERR
@@ -405,6 +409,15 @@ ssize_t simplefs_write(struct file * filp, const char __user * buf, size_t len,
 		return -EFAULT;
 	}
 	*ppos += len;
+
+	retval = jbd2_journal_dirty_metadata(handle, bh);
+	if (WARN_ON(retval)) {
+		brelse(bh);
+		return retval;
+	}
+	retval = jbd2_journal_stop(handle);
+	if (retval)
+		return retval;
 
 	mark_buffer_dirty(bh);
 	sync_dirty_buffer(bh);
