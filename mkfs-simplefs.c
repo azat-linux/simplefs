@@ -36,7 +36,7 @@ static int write_superblock(int fd)
 	return 0;
 }
 
-static int write_inode_store(int fd)
+static int write_root_inode(int fd)
 {
 	ssize_t ret;
 
@@ -58,8 +58,7 @@ static int write_inode_store(int fd)
 	printf("root directory inode written succesfully\n");
 	return 0;
 }
-
-static int write_journal(int fd)
+static int write_journal_inode(int fd)
 {
 	ssize_t ret;
 
@@ -78,8 +77,7 @@ static int write_journal(int fd)
 	printf("journal inode written succesfully\n");
 	return 0;
 }
-
-static int write_inode(int fd, const struct simplefs_inode *i)
+static int write_welcome_inode(int fd, const struct simplefs_inode *i)
 {
 	off_t nbytes;
 	ssize_t ret;
@@ -92,7 +90,7 @@ static int write_inode(int fd, const struct simplefs_inode *i)
 	}
 	printf("welcomefile inode written succesfully\n");
 
-	nbytes = SIMPLEFS_DEFAULT_BLOCK_SIZE - sizeof(*i) - sizeof(*i);
+	nbytes = SIMPLEFS_DEFAULT_BLOCK_SIZE - (sizeof(*i) * 3);
 	ret = lseek(fd, nbytes, SEEK_CUR);
 	if (ret == (off_t)-1) {
 		printf
@@ -101,9 +99,23 @@ static int write_inode(int fd, const struct simplefs_inode *i)
 	}
 
 	printf
-	    ("inode store padding bytes (after the two inodes) written sucessfully\n");
+	    ("inode store padding bytes (after the three inodes) written sucessfully\n");
 	return 0;
 }
+
+int write_journal(int fd)
+{
+	ssize_t ret;
+	ret = lseek(fd, SIMPLEFS_DEFAULT_BLOCK_SIZE * SIMPLEFS_JOURNAL_BLOCKS, SEEK_CUR);
+	if (ret == (off_t)-1) {
+		printf("Can't write journal. Retry you mkfs\n");
+		return -1;
+	}
+
+	printf("Journal written successfully\n");
+	return 0;
+}
+
 int write_dirent(int fd, const struct simplefs_dir_record *record)
 {
 	ssize_t nbytes = sizeof(*record), ret;
@@ -173,13 +185,17 @@ int main(int argc, char *argv[])
 	do {
 		if (write_superblock(fd))
 			break;
-		if (write_inode_store(fd))
+
+		if (write_root_inode(fd))
 			break;
+		if (write_journal_inode(fd))
+			break;
+		if (write_welcome_inode(fd, &welcome))
+			break;
+
 		if (write_journal(fd))
 			break;
 
-		if (write_inode(fd, &welcome))
-			break;
 		if (write_dirent(fd, &record))
 			break;
 		if (write_block(fd, welcomefile_body, welcome.file_size))
