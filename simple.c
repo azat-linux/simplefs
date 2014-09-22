@@ -416,8 +416,10 @@ ssize_t simplefs_write(struct file * filp, const char __user * buf, size_t len,
 		return retval;
 	}
 	retval = jbd2_journal_stop(handle);
-	if (retval)
+	if (WARN_ON(retval)) {
+		brelse(bh);
 		return retval;
+	}
 
 	mark_buffer_dirty(bh);
 	sync_dirty_buffer(bh);
